@@ -88,3 +88,4 @@ app/
   templates/     Jinja2 + HTMX 화면
   static/        CSS, JS, PWA 파일
 ```
+# proverbs-track
