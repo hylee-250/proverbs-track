@@ -1,0 +1,15 @@
+[project]
+name = "proverbs-track"
+version = "0.1.0"
+description = "잠언 필사 진도 체크 웹앱 (FastAPI)"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi==0.115.12",
+    "jinja2==3.1.6",
+    "psycopg[binary]==3.2.6",
+    "python-dotenv==1.1.0",
+    "python-multipart==0.0.20",
+    "sqlalchemy==2.0.40",
+    "tzdata==2025.2",
+    "uvicorn[standard]==0.34.2",
+]

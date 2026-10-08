@@ -45,13 +45,21 @@ FastAPI로 만들었고, Cloudtype에 배포하고 Neon(PostgreSQL)을 DB로 씁
 
 ## 로컬 실행
 
+[uv](https://docs.astral.sh/uv/)로 환경을 만듭니다. Python 3.12는 `.python-version`에 고정되어 있고, 없으면 uv가 알아서 받습니다.
+
 ```bash
-pip install -r requirements.txt
-cp .env.example .env   # MEMBERS를 입력하고, DATABASE_URL은 지우면 SQLite로 실행됩니다
-uvicorn app.main:app --reload --port 8731
+uv sync                # .venv 생성 + uv.lock 기준으로 의존성 설치
+cp .env.example .env   # MEMBERS를 입력하고, DATABASE_URL을 지우면 SQLite로 실행됩니다
+uv run uvicorn app.main:app --reload --port 8731
 ```
 
 브라우저에서 http://localhost:8731 을 엽니다. 테이블은 앱이 시작될 때 자동으로 만들어집니다.
+같은 와이파이에 있는 휴대폰으로 보려면 `--host 0.0.0.0`을 붙이고 `http://<내 PC IP>:8731`로 접속합니다.
+
+### 의존성 관리
+
+- 패키지 추가: `uv add <패키지>` (`pyproject.toml`과 `uv.lock`이 함께 바뀝니다)
+- Cloudtype은 `requirements.txt`로 설치하므로, 의존성을 바꿨다면 `requirements.txt`에도 같은 버전을 반영해 주세요.
 
 ## 배포 (Neon + Cloudtype)
 
