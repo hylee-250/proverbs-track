@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ stats.member }}님의 진도 · {{ app_title }}{% endblock %}
+{% block content %}
+<div class="mb-4 flex items-center gap-3">
+  <a href="/team" class="rounded-lg p-1.5 text-stone-500 hover:bg-stone-200/70 dark:hover:bg-stone-800" aria-label="팀 현황으로">
+    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+  </a>
+  <div>
+    <h1 class="text-xl font-bold sm:text-2xl">{{ stats.member }}님의 진도</h1>
+    <p class="text-sm text-stone-500">
+      {% if stats.last_completed_at %}마지막 필사 {{ stats.last_completed_at | kst("relative") }}{% else %}아직 시작 전이에요{% endif %}
+    </p>
+  </div>
+</div>
+{% set readonly = true %}
+{% include "partials/dashboard.html" %}
+{% endblock %}

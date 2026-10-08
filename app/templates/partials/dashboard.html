@@ -1,0 +1,145 @@
+{% set tone_styles = {
+  "done": "bg-emerald-600 text-white",
+  "ahead": "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300",
+  "ontrack": "bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300",
+  "behind": "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-300",
+  "neutral": "bg-stone-200 text-stone-700 dark:bg-stone-800 dark:text-stone-300",
+} %}
+{% set circ = 326.73 %}
+<div id="dashboard" class="space-y-5">
+  <section class="grid gap-4 md:grid-cols-5">
+    <div class="card flex items-center gap-5 p-5 md:col-span-3">
+      <div class="relative h-32 w-32 shrink-0 sm:h-36 sm:w-36">
+        <svg viewBox="0 0 120 120" class="h-full w-full -rotate-90">
+          <circle cx="60" cy="60" r="52" fill="none" stroke-width="12" class="stroke-stone-200 dark:stroke-stone-800"/>
+          <circle cx="60" cy="60" r="52" fill="none" stroke-width="12" stroke-linecap="round"
+                  class="stroke-emerald-600 transition-all duration-700 dark:stroke-emerald-500"
+                  stroke-dasharray="{{ circ }}" stroke-dashoffset="{{ circ * (1 - stats.percent / 100) }}"/>
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <span class="text-3xl font-extrabold tabular-nums tracking-tight sm:text-4xl">{{ stats.percent }}<span class="text-lg font-bold">%</span></span>
+          <span class="text-xs text-stone-500">진도율</span>
+        </div>
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="text-sm text-stone-500">{{ "내" if not readonly else stats.member ~ "님의" }} 필사</p>
+        <p class="mt-0.5 text-2xl font-bold tabular-nums sm:text-3xl">{{ stats.count }}<span class="text-base font-semibold text-stone-400"> / {{ TOTAL_CHAPTERS }}장</span></p>
+        <p class="mt-0.5 text-sm tabular-nums text-stone-500">{{ stats.verses_done }} / {{ TOTAL_VERSES }}절</p>
+        <span class="mt-3 inline-block rounded-full px-3 py-1 text-xs font-semibold {{ tone_styles[pace.tone] }}">{{ pace.label }}</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 md:col-span-2">
+      <div class="card p-4">
+        <p class="text-xs text-stone-500">다음 쓸 장</p>
+        {% if stats.next_chapter %}
+        <p class="mt-1 text-2xl font-bold">{{ stats.next_chapter }}장</p>
+        <p class="mt-0.5 truncate text-xs text-stone-500">{{ THEMES[stats.next_chapter] }} · {{ VERSE_COUNTS[stats.next_chapter] }}절</p>
+        {% else %}
+        <p class="mt-1 text-2xl font-bold text-emerald-600">완주</p>
+        {% endif %}
+      </div>
+      <div class="card p-4">
+        <p class="text-xs text-stone-500">연속 필사</p>
+        <p class="mt-1 text-2xl font-bold tabular-nums">{{ current_streak }}<span class="text-sm font-semibold text-stone-400">일</span></p>
+        <p class="mt-0.5 text-xs text-stone-500">최고 기록 {{ best_streak }}일</p>
+      </div>
+      <div class="card p-4">
+        <p class="text-xs text-stone-500">오늘까지 권장</p>
+        <p class="mt-1 text-2xl font-bold tabular-nums">{{ pace.expected }}<span class="text-sm font-semibold text-stone-400">장</span></p>
+        <p class="mt-0.5 text-xs text-stone-500">{{ period.elapsed_days }} / {{ period.total_days }}일째</p>
+      </div>
+      <div class="card p-4">
+        <p class="text-xs text-stone-500">남은 하루 목표</p>
+        <p class="mt-1 text-2xl font-bold tabular-nums">{{ pace.per_day }}<span class="text-sm font-semibold text-stone-400">장</span></p>
+        <p class="mt-0.5 text-xs text-stone-500">남은 {{ pace.left }}장 · {{ period.remaining_days }}일</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card p-4 sm:p-5">
+    <div class="flex items-end justify-between gap-2">
+      <div>
+        <h2 class="text-lg font-bold">장별 체크</h2>
+        <p class="text-xs text-stone-500">{% if readonly %}{{ stats.member }}님이 완료한 장이에요{% else %}필사를 마친 장을 누르세요 · 다시 누르면 취소{% endif %}</p>
+      </div>
+      <div class="flex items-center gap-3 text-[11px] text-stone-500">
+        <span class="flex items-center gap-1"><i class="inline-block h-3 w-3 rounded bg-emerald-600"></i>완료</span>
+        <span class="flex items-center gap-1"><i class="inline-block h-3 w-3 rounded border-2 border-amber-500"></i>다음</span>
+      </div>
+    </div>
+    <div class="mt-4 grid grid-cols-5 gap-2 min-[400px]:grid-cols-6 sm:grid-cols-8 lg:grid-cols-11">
+      {% for c in range(1, TOTAL_CHAPTERS + 1) %}
+      {% set done = c in stats.completed %}
+      {% set is_next = c == stats.next_chapter %}
+      {% set cls = "chapter-cell " ~ ("is-done" if done else ("is-next" if is_next else "")) %}
+      {% if readonly %}
+      <div class="{{ cls }}" title="{{ c }}장 · {{ THEMES[c] }}">
+      {% else %}
+      <button type="button" class="{{ cls }}"
+              hx-post="/chapters/{{ c }}/toggle" hx-target="#dashboard" hx-swap="outerHTML"
+              {% if done %}hx-confirm="{{ c }}장 체크를 취소할까요?"{% endif %}
+              title="{{ c }}장 · {{ THEMES[c] }}" aria-pressed="{{ 'true' if done else 'false' }}">
+      {% endif %}
+        <span class="text-base font-bold leading-none sm:text-lg">{{ c }}</span>
+        <span class="mt-1 text-[10px] leading-none opacity-75">
+          {% if done %}{{ stats.completed[c] | kst("date") }}{% else %}{{ VERSE_COUNTS[c] }}절{% endif %}
+        </span>
+        {% if c in stats.note_chapters %}<i class="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-amber-400"></i>{% endif %}
+      {% if readonly %}</div>{% else %}</button>{% endif %}
+      {% endfor %}
+    </div>
+    <div class="mt-4 h-2 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-800">
+      <div class="relative h-full rounded-full bg-emerald-600 transition-all duration-700" style="width: {{ stats.percent }}%"></div>
+    </div>
+    <div class="relative mt-1 h-4 text-[10px] text-stone-500">
+      <span class="absolute -translate-x-1/2" style="left: clamp(2rem, {{ (period.expected_ratio * 100) | round(1) }}%, calc(100% - 2rem))">▲ 오늘 목표</span>
+    </div>
+  </section>
+
+  <div class="grid gap-5 lg:grid-cols-2">
+    <section class="card p-4 sm:p-5">
+      <h2 class="text-lg font-bold">필사 달력</h2>
+      <p class="text-xs text-stone-500">하루에 완료한 장 수만큼 진해져요 · 서울 시간 기준</p>
+      <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        {% for month in months %}
+        <div>
+          <p class="mb-2 text-sm font-semibold">{{ month.label }}</p>
+          <div class="grid grid-cols-7 gap-1 text-center text-[10px] text-stone-400">
+            {% for w in "일월화수목금토" %}<span>{{ w }}</span>{% endfor %}
+          </div>
+          <div class="mt-1 grid grid-cols-7 gap-1">
+            {% for cell in month.cells %}
+            {% if cell is none %}<span></span>{% else %}
+            {% set lvl = 0 if cell.count == 0 else (1 if cell.count == 1 else (2 if cell.count == 2 else 3)) %}
+            <span class="cal-cell lvl-{{ lvl }} {{ 'out' if not cell.in_period }} {{ 'today' if cell.is_today }}"
+                  title="{{ cell.date.month }}/{{ cell.date.day }}{% if cell.count %} · {{ cell.count }}장{% endif %}">{{ cell.date.day }}</span>
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="card p-4 sm:p-5">
+      <h2 class="text-lg font-bold">배지</h2>
+      <p class="text-xs text-stone-500">{{ badges | selectattr("earned") | list | length }} / {{ badges | length }} 획득</p>
+      <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+        {% for b in badges %}
+        <div class="badge {{ 'earned' if b.earned }}">
+          <span class="badge-icon">
+            {% if b.earned %}
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.26L22 9.27l-5 5.14L18.18 22 12 18.56 5.82 22 7 14.41l-5-5.14 7.1-1.01z"/></svg>
+            {% else %}
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 118 0v4"/></svg>
+            {% endif %}
+          </span>
+          <span class="mt-1.5 text-sm font-semibold">{{ b.title }}</span>
+          <span class="text-[11px] text-stone-500">{{ b.desc }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+</div>

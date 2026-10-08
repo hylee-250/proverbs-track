@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-4">
+  <h1 class="text-xl font-bold sm:text-2xl">{{ me }}님, 오늘도 한 장씩</h1>
+  <p class="mt-0.5 text-sm text-stone-500">
+    {% if period.status == "before" %}필사는 {{ period.start.month }}월 {{ period.start.day }}일에 시작해요. 미리 체크해도 괜찮아요.
+    {% elif period.status == "after" %}필사 기간이 끝났어요. 기록은 계속 남아 있어요.
+    {% else %}{{ period.today.month }}월 {{ period.today.day }}일 · 함께 {{ period.total_days }}일 중 {{ period.elapsed_days }}일째{% endif %}
+  </p>
+</div>
+{% set readonly = false %}
+{% include "partials/dashboard.html" %}
+{% endblock %}

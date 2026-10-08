@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}{{ app_title }}{% endblock %}</title>
+  <meta name="description" content="잠언 31장 필사 진도를 함께 체크해요">
+  <meta name="theme-color" content="#065f46">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/static/icon.svg">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="잠언 필사">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <script>
+    (function () {
+      var t = localStorage.getItem("theme");
+      if (t === "dark" || (!t && matchMedia("(prefers-color-scheme: dark)").matches)) {
+        document.documentElement.classList.add("dark");
+      }
+    })();
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: { sans: ["Pretendard Variable", "Pretendard", "system-ui", "sans-serif"] },
+        },
+      },
+    };
+  </script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body class="min-h-screen bg-stone-50 text-stone-900 antialiased dark:bg-stone-950 dark:text-stone-100">
+  {% if me %}
+  <header class="sticky top-0 z-30 border-b border-stone-200/70 bg-stone-50/85 backdrop-blur dark:border-stone-800 dark:bg-stone-950/85">
+    <div class="mx-auto flex h-14 max-w-5xl items-center gap-3 px-4">
+      <a href="/" class="flex items-center gap-2 font-bold tracking-tight">
+        <img src="/static/icon.svg" alt="" class="h-7 w-7 rounded-lg">
+        <span class="hidden sm:inline">{{ app_title }}</span>
+        <span class="sm:hidden">잠언 필사</span>
+      </a>
+      <span class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">{{ period.d_day_label }}</span>
+      <nav class="ml-6 hidden items-center gap-1 md:flex">
+        {% for key, href, label in [("home", "/", "내 진도"), ("team", "/team", "팀 현황"), ("notes", "/notes", "나눔"), ("admin", "/admin", "전체 표")] %}
+        <a href="{{ href }}" class="rounded-lg px-3 py-1.5 text-sm font-medium {{ 'bg-stone-900 text-white dark:bg-white dark:text-stone-900' if nav == key else 'text-stone-600 hover:bg-stone-200/70 dark:text-stone-400 dark:hover:bg-stone-800' }}">{{ label }}</a>
+        {% endfor %}
+      </nav>
+      <div class="ml-auto flex items-center gap-1">
+        <button type="button" onclick="toggleTheme()" class="rounded-lg p-2 text-stone-500 hover:bg-stone-200/70 dark:hover:bg-stone-800" aria-label="다크 모드 전환">
+          <svg class="h-5 w-5 dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          <svg class="hidden h-5 w-5 dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <a href="/logout" class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-stone-200/70 dark:hover:bg-stone-800" title="다른 이름으로 바꾸기">
+          <span class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-700 text-xs font-bold text-white">{{ me[:1] }}</span>
+          <span class="hidden font-medium sm:inline">{{ me }}</span>
+        </a>
+      </div>
+    </div>
+  </header>
+  {% endif %}
+
+  <main class="mx-auto max-w-5xl px-4 pb-28 pt-5 md:pb-12">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% if me %}
+  <nav class="fixed inset-x-0 bottom-0 z-30 border-t border-stone-200 bg-white/95 backdrop-blur md:hidden dark:border-stone-800 dark:bg-stone-900/95" style="padding-bottom: env(safe-area-inset-bottom)">
+    <div class="mx-auto grid max-w-md grid-cols-4">
+      {% set tabs = [
+        ("home", "/", "내 진도", "M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V2H6.5A2.5 2.5 0 004 4.5v15z"),
+        ("team", "/team", "팀 현황", "M17 20h5v-2a3 3 0 00-5.36-1.86M17 20H7m10 0v-2c0-.66-.13-1.28-.36-1.86M7 20H2v-2a3 3 0 015.36-1.86M7 20v-2c0-.66.13-1.28.36-1.86m0 0a5 5 0 019.28 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"),
+        ("notes", "/notes", "나눔", "M8 10h8M8 14h5m-9 6l3-3h11a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v14z"),
+        ("admin", "/admin", "전체 표", "M3 10h18M3 14h18M10 3v18M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"),
+      ] %}
+      {% for key, href, label, icon in tabs %}
+      <a href="{{ href }}" class="flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium {{ 'text-emerald-700 dark:text-emerald-400' if nav == key else 'text-stone-500' }}">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="{{ '2.2' if nav == key else '1.7' }}"><path stroke-linecap="round" stroke-linejoin="round" d="{{ icon }}"/></svg>
+        {{ label }}
+      </a>
+      {% endfor %}
+    </div>
+  </nav>
+  {% endif %}
+
+  <div id="toast" class="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex justify-center px-4 md:bottom-8"></div>
+  <canvas id="confetti" class="pointer-events-none fixed inset-0 z-40 h-full w-full"></canvas>
+  <script src="/static/app.js"></script>
+</body>
+</html>

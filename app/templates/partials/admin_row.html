@@ -1,0 +1,17 @@
+<tr>
+  <td class="sticky left-0 z-10 whitespace-nowrap border-t border-stone-100 bg-white px-3 py-1.5 font-semibold dark:border-stone-800 dark:bg-stone-900">{{ row.member }}</td>
+  <td class="whitespace-nowrap border-t border-stone-100 px-2 py-1.5 text-center text-xs tabular-nums dark:border-stone-800">
+    <b>{{ row.percent }}%</b><br><span class="text-stone-500">{{ row.count }}장</span>
+  </td>
+  {% for c in range(1, TOTAL_CHAPTERS + 1) %}
+  {% set done = c in row.completed %}
+  <td class="border-t border-stone-100 p-0.5 dark:border-stone-800">
+    <button type="button"
+            hx-post="/admin/toggle" hx-vals='{"name": {{ row.member | tojson }}, "chapter": {{ c }}}'
+            hx-target="closest tr" hx-swap="outerHTML"
+            hx-confirm="{{ row.member }}님의 {{ c }}장을 {{ '취소' if done else '완료' }} 처리할까요?"
+            class="admin-cell {{ 'is-done' if done }}"
+            title="{{ row.member }} · {{ c }}장{% if done %} · {{ row.completed[c] | kst }}{% endif %}">{% if done %}✓{% endif %}</button>
+  </td>
+  {% endfor %}
+</tr>

@@ -1,0 +1,133 @@
+html { -webkit-tap-highlight-color: transparent; }
+body { font-feature-settings: "tnum" 0; }
+
+.card {
+  border-radius: 1rem;
+  border: 1px solid rgb(231 229 228);
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+}
+.dark .card { border-color: rgb(41 37 36); background: rgb(28 25 23); }
+
+.field {
+  display: block;
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(214 211 209);
+  background: #fff;
+  padding: 0.625rem 0.75rem;
+  font-size: 1rem; /* 16px avoids iOS zoom on focus */
+  outline: none;
+}
+.field:focus { border-color: rgb(4 120 87); box-shadow: 0 0 0 3px rgb(16 185 129 / 0.2); }
+.dark .field { border-color: rgb(68 64 60); background: rgb(41 37 36); color: inherit; }
+
+.chapter-cell {
+  position: relative;
+  display: flex;
+  aspect-ratio: 1 / 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.875rem;
+  border: 1.5px solid rgb(231 229 228);
+  background: rgb(250 250 249);
+  color: rgb(68 64 60);
+  transition: transform 0.12s, background-color 0.2s, border-color 0.2s;
+  user-select: none;
+}
+button.chapter-cell:hover { border-color: rgb(16 185 129); }
+button.chapter-cell:active { transform: scale(0.92); }
+.chapter-cell.is-next { border: 2px solid rgb(245 158 11); background: rgb(255 251 235); color: rgb(120 53 15); }
+.chapter-cell.is-done { border-color: rgb(5 150 105); background: rgb(5 150 105); color: #fff; }
+.dark .chapter-cell { border-color: rgb(68 64 60); background: rgb(41 37 36); color: rgb(214 211 209); }
+.dark .chapter-cell.is-next { border-color: rgb(245 158 11); background: rgb(69 26 3 / 0.5); color: rgb(253 230 138); }
+.dark .chapter-cell.is-done { border-color: rgb(16 185 129); background: rgb(5 150 105); color: #fff; }
+.chapter-cell.htmx-request { opacity: 0.5; }
+
+.cal-cell {
+  display: flex;
+  aspect-ratio: 1 / 1;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: rgb(120 113 108);
+  background: rgb(245 245 244);
+}
+.dark .cal-cell { background: rgb(41 37 36); color: rgb(168 162 158); }
+.cal-cell.lvl-1 { background: rgb(167 243 208); color: rgb(6 78 59); }
+.cal-cell.lvl-2 { background: rgb(52 211 153); color: rgb(6 78 59); }
+.cal-cell.lvl-3 { background: rgb(5 150 105); color: #fff; font-weight: 700; }
+.cal-cell.out { opacity: 0.3; }
+.cal-cell.today { box-shadow: inset 0 0 0 2px rgb(245 158 11); font-weight: 700; }
+
+.badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 0.875rem;
+  border: 1px dashed rgb(214 211 209);
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  opacity: 0.55;
+}
+.dark .badge { border-color: rgb(68 64 60); }
+.badge-icon {
+  display: flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: rgb(231 229 228);
+  color: rgb(120 113 108);
+}
+.dark .badge-icon { background: rgb(41 37 36); }
+.badge.earned { opacity: 1; border-style: solid; border-color: rgb(252 211 77); background: rgb(255 251 235); }
+.badge.earned .badge-icon { background: rgb(245 158 11); color: #fff; }
+.dark .badge.earned { border-color: rgb(146 64 14); background: rgb(69 26 3 / 0.4); }
+
+.heat-cell {
+  display: flex;
+  aspect-ratio: 1 / 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: rgb(5 150 105 / calc(0.08 + var(--r) * 0.92));
+  color: rgb(6 78 59);
+}
+.dark .heat-cell { color: rgb(209 250 229); }
+
+.admin-cell {
+  display: flex;
+  height: 1.75rem;
+  width: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  background: rgb(245 245 244);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+}
+.admin-cell:hover { box-shadow: inset 0 0 0 2px rgb(16 185 129); }
+.admin-cell.is-done { background: rgb(5 150 105); }
+.dark .admin-cell { background: rgb(41 37 36); }
+.dark .admin-cell.is-done { background: rgb(5 150 105); }
+
+.toast {
+  pointer-events: auto;
+  border-radius: 9999px;
+  background: rgb(28 25 23);
+  color: #fff;
+  padding: 0.7rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+  animation: toast-in 0.25s ease-out;
+}
+.dark .toast { background: #fff; color: rgb(28 25 23); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }

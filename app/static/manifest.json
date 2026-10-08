@@ -1,0 +1,13 @@
+{
+  "name": "잠언 필사 챌린지",
+  "short_name": "잠언 필사",
+  "description": "잠언 31장 필사 진도를 함께 체크해요",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafaf9",
+  "theme_color": "#065f46",
+  "lang": "ko",
+  "icons": [
+    { "src": "/static/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

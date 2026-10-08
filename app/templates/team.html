@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}팀 현황 · {{ app_title }}{% endblock %}
+{% block content %}
+<h1 class="text-xl font-bold sm:text-2xl">팀 현황</h1>
+<p class="mt-0.5 text-sm text-stone-500">{{ summary.member_count }}명이 함께 잠언을 쓰고 있어요</p>
+
+<section class="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+  <div class="card col-span-2 p-4 md:col-span-1">
+    <p class="text-xs text-stone-500">팀 평균 진도율</p>
+    <p class="mt-1 text-3xl font-extrabold tabular-nums text-emerald-700 dark:text-emerald-400">{{ summary.avg_percent }}%</p>
+    <div class="mt-2 h-2 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-800">
+      <div class="h-full rounded-full bg-emerald-600" style="width: {{ summary.avg_percent }}%"></div>
+    </div>
+    <p class="mt-1.5 text-xs text-stone-500">평균 {{ summary.avg_chapters }}장</p>
+  </div>
+  <div class="card p-4">
+    <p class="text-xs text-stone-500">완주</p>
+    <p class="mt-1 text-2xl font-bold tabular-nums">{{ summary.finished }}<span class="text-sm text-stone-400"> / {{ summary.member_count }}명</span></p>
+  </div>
+  <div class="card p-4">
+    <p class="text-xs text-stone-500">계획대로 진행 중</p>
+    <p class="mt-1 text-2xl font-bold tabular-nums">{{ summary.on_track }}<span class="text-sm text-stone-400">명</span></p>
+    <p class="text-xs text-stone-500">오늘 목표 {{ period.expected_chapters }}장 이상</p>
+  </div>
+  <div class="card col-span-2 p-4 md:col-span-1">
+    <p class="text-xs text-stone-500">오늘 필사</p>
+    <p class="mt-1 text-2xl font-bold tabular-nums">{{ summary.today_count }}<span class="text-sm text-stone-400">장</span></p>
+    <p class="text-xs text-stone-500">{{ summary.active_today }}명 참여 · 누적 {{ summary.total_chapters_done }}장</p>
+  </div>
+</section>
+
+<div class="mt-5 grid gap-5 lg:grid-cols-5">
+  <section class="card p-4 sm:p-5 lg:col-span-3">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h2 class="text-lg font-bold">멤버별 진도</h2>
+      <div class="flex rounded-lg bg-stone-100 p-0.5 text-xs font-medium dark:bg-stone-800">
+        {% for key, label in [("progress", "진도순"), ("recent", "최근순"), ("name", "이름순")] %}
+        <a href="?sort={{ key }}" class="rounded-md px-2.5 py-1 {{ 'bg-white shadow-sm dark:bg-stone-700' if sort == key else 'text-stone-500' }}">{{ label }}</a>
+        {% endfor %}
+      </div>
+    </div>
+    {% if rows %}
+    <ul class="mt-3 divide-y divide-stone-100 dark:divide-stone-800">
+      {% for s in rows %}
+      {% set behind = s.count < period.expected_chapters and not s.is_finished %}
+      <li>
+        <a href="/members/{{ s.member | urlencode }}" class="-mx-2 flex items-center gap-3 rounded-lg px-2 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-800/50 {{ 'ring-2 ring-emerald-500/40' if s.member == me }}">
+          <span class="w-5 text-center text-sm font-bold tabular-nums {{ 'text-amber-500' if sort == 'progress' and loop.index <= 3 and s.count > 0 else 'text-stone-400' }}">{{ loop.index if sort == "progress" else "" }}</span>
+          <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold {{ 'bg-emerald-600 text-white' if s.is_finished else 'bg-stone-200 text-stone-700 dark:bg-stone-800 dark:text-stone-300' }}">{{ s.member[:1] }}</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-baseline justify-between gap-2">
+              <span class="truncate font-semibold">{{ s.member }}{% if s.member == me %} <span class="text-xs font-normal text-emerald-600">나</span>{% endif %}</span>
+              <span class="shrink-0 text-sm font-bold tabular-nums">{{ s.percent }}%</span>
+            </div>
+            <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-800">
+              <div class="h-full rounded-full {{ 'bg-amber-500' if behind else 'bg-emerald-600' }}" style="width: {{ s.percent }}%"></div>
+            </div>
+            <div class="mt-1 flex justify-between text-[11px] text-stone-500">
+              <span>{{ s.count }}/{{ TOTAL_CHAPTERS }}장{% if s.is_finished %} · 완주{% endif %}</span>
+              <span>{% if s.last_completed_at %}{{ s.last_completed_at | kst("relative") }}{% else %}시작 전{% endif %}</span>
+            </div>
+          </div>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="mt-6 text-center text-sm text-stone-500">등록된 멤버가 없어요. 환경 변수 MEMBERS를 확인해 주세요.</p>
+    {% endif %}
+  </section>
+
+  <div class="space-y-5 lg:col-span-2">
+    <section class="card p-4 sm:p-5">
+      <h2 class="text-lg font-bold">장별 완료 인원</h2>
+      <p class="text-xs text-stone-500">진할수록 많은 멤버가 완료했어요</p>
+      <div class="mt-3 grid grid-cols-8 gap-1.5">
+        {% for c, n in summary.chapter_counts.items() %}
+        {% set ratio = (n / summary.member_count) if summary.member_count else 0 %}
+        <a href="/notes?chapter={{ c }}" class="heat-cell" style="--r: {{ ratio }}" title="{{ c }}장 · {{ n }}명 완료">
+          <span class="text-xs font-bold">{{ c }}</span>
+          <span class="text-[9px] opacity-80">{{ n }}명</span>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="card p-4 sm:p-5">
+      <h2 class="text-lg font-bold">최근 활동</h2>
+      {% if activities %}
+      <ul class="mt-3 space-y-2.5">
+        {% for a in activities %}
+        <li class="flex items-start gap-2.5 text-sm">
+          <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full {{ 'bg-emerald-500' if a.action == 'complete' else 'bg-amber-400' }}"></span>
+          <span class="flex-1"><b>{{ a.member }}</b>님이 {% if a.action == "complete" %}<b>{{ a.chapter }}장</b>을 완료했어요{% else %}<a href="/notes?chapter={{ a.chapter }}" class="underline decoration-dotted"><b>{{ a.chapter }}장</b>에 나눔</a>을 남겼어요{% endif %}</span>
+          <span class="shrink-0 text-xs text-stone-400">{{ a.created_at | kst("relative") }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="mt-4 rounded-xl bg-stone-50 py-6 text-center text-sm text-stone-500 dark:bg-stone-800/50">아직 활동이 없어요.<br>첫 번째 필사의 주인공이 되어 보세요!</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}
