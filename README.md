@@ -67,11 +67,11 @@ uv run uvicorn app.main:app --reload --port 8731
    1. [neon.tech](https://neon.tech)에서 프로젝트를 만듭니다. 리전은 Asia Pacific(Singapore)를 추천합니다.
    2. Dashboard → Connect에서 **Pooled connection** 문자열을 복사합니다. `postgresql://...-pooler...?sslmode=require` 형태입니다.
 2. **Cloudtype**
-   1. 새 프로젝트를 만들고 이 GitHub 저장소를 연결한 뒤, 프리셋으로 **Python**을 고릅니다.
-   2. Python 버전은 3.12, Port는 `8000`으로 둡니다.
-   3. Start command는 `uvicorn app.main:app --host 0.0.0.0 --port 8000` 입니다.
-   4. 환경 변수에 `MEMBERS`, `DATABASE_URL`(필요하면 `START_DATE`, `END_DATE`, `APP_TITLE`도)를 입력합니다.
-   5. 배포가 끝나면 `https://<도메인>/healthz`가 `{"ok": true}`를 돌려주는지 확인합니다.
+   1. 새 프로젝트에서 **Git 저장소로 배포**를 누르고 이 저장소의 `main` 브랜치를 고릅니다.
+   2. 앱 설정에서 **Dockerfile**을 고르고 Port는 `8000`으로 둡니다. 저장소 루트의 `Dockerfile`이 쓰이며, Start command는 따로 넣지 않아도 됩니다.
+      (Dockerfile 대신 **Python** 프리셋을 고른다면 Python 3.12, Start command `uvicorn app.main:app --host 0.0.0.0 --port 8000`)
+   3. 환경 변수에 `MEMBERS`, `DATABASE_URL`(필요하면 `START_DATE`, `END_DATE`, `APP_TITLE`도)를 입력합니다.
+   4. 배포가 끝나면 `https://<도메인>/healthz`가 `{"ok": true}`를 돌려주는지 확인합니다.
 3. 접속 주소를 팀원들에게 공유합니다. 휴대폰 브라우저의 "홈 화면에 추가"를 쓰면 앱처럼 쓸 수 있습니다.
 
 멤버를 추가하거나 빼려면 Cloudtype 환경 변수 `MEMBERS`를 고친 뒤 재시작하면 됩니다.
