@@ -36,5 +36,5 @@ class Activity(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     member: Mapped[str] = mapped_column(String(50), index=True)
     chapter: Mapped[int] = mapped_column(Integer)
-    action: Mapped[str] = mapped_column(String(20))  # complete | undo | note
+    action: Mapped[str] = mapped_column(String(20))  # complete | note
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)

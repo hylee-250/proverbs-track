@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response, Streamin
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import delete, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .config import settings
@@ -114,13 +115,25 @@ def toggle_chapter(session: Session, member: str, chapter: int) -> bool:
     )
     if row:
         session.delete(row)
-        log(session, member, chapter, "undo")
+        last_complete = session.scalar(
+            select(Activity)
+            .where(Activity.member == member, Activity.chapter == chapter, Activity.action == "complete")
+            .order_by(Activity.created_at.desc())
+            .limit(1)
+        )
+        if last_complete:
+            session.delete(last_complete)
         done = False
     else:
         session.add(ChapterProgress(member=member, chapter=chapter))
         log(session, member, chapter, "complete")
         done = True
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError:
+        # A concurrent double tap already inserted this chapter.
+        session.rollback()
+        done = True
     return done
 
 
@@ -212,7 +225,7 @@ def team(
         rows.sort(key=lambda s: (-s.verses_done, s.last_completed_at or now_kst()))
     activities = session.scalars(
         select(Activity)
-        .where(Activity.action != "undo", Activity.member.in_(settings.members))
+        .where(Activity.action.in_(("complete", "note")), Activity.member.in_(settings.members))
         .order_by(Activity.created_at.desc())
         .limit(30)
     ).all()
@@ -294,6 +307,14 @@ def delete_note(
     note = session.get(ChapterNote, note_id)
     if note and note.member == member:
         session.delete(note)
+        feed_item = session.scalar(
+            select(Activity)
+            .where(Activity.member == member, Activity.chapter == note.chapter, Activity.action == "note")
+            .order_by(Activity.created_at.desc())
+            .limit(1)
+        )
+        if feed_item:
+            session.delete(feed_item)
         session.commit()
     return RedirectResponse("/notes", status_code=303)
 
